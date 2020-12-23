@@ -33,18 +33,16 @@ export const isSubObject = field => {
     );
 };
 
-const getType = field => {
-    if (
-        field.type.kind === TypeKind.LIST ||
-        field.type.kind === TypeKind.NON_NULL
-    ) {
-        return field.type.ofType;
-    }
-    return field.type;
+const getType = (type) => {
+  if (type.kind === TypeKind.NON_NULL || type.kind === TypeKind.LIST) {
+    return getFinalType(type.ofType);
+  }
+
+  return type;
 };
 
 const isResource = (field, resources) => {
-    const type = getType(field);
+    const type = getType(field.type);
     return resources.some(r => r.type.name === type.name);
 };
 
@@ -63,7 +61,7 @@ const buildFieldList = (
         .map(field => {
             try {
                 if (isSubObject(field, types) && depth < 8) {
-                    let typeToCheck = getType(field);
+                    let typeToCheck = getType(field.type);
                     if (isResource(field, resources)) {
                         const type = types.find(
                             t => t.name === typeToCheck.name
